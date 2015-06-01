@@ -33,7 +33,18 @@ class HTMLTranslator(SphinxHTMLTranslator):
       docname = os.path.relpath(
         node['source'],
         self.builder.env.srcdir
-      ).replace(self.builder.config.source_suffix, '')
+      )
+
+      suffixes = self.builder.config.source_suffix
+      # retain backwards compatibility with sphinx < 1.3
+      if isinstance(suffixes, basestring):
+        suffixes = [suffixes]
+
+      for suffix in suffixes:
+        if docname.endswith(suffix):
+          docname = docname[:-len(suffix)]
+          break
+
       self.page_toc = self.builder.env.get_toc_for(docname, self.builder)
 
       toc_empty = bool(
@@ -221,3 +232,9 @@ class HTMLTranslator(SphinxHTMLTranslator):
 
 def setup(sphinx):
   sphinx.config.html_translator_class = 'bootstrap.HTMLTranslator'
+
+# python 2 and 3 compatibility
+try:
+    basestring
+except:
+    basestring = str
